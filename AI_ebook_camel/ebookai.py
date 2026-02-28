@@ -59,6 +59,10 @@ role_play_session = RolePlaying(
     with_task_specify=False, # 在本例中，我们直接使用给定的task_prompt
 )
 
+# 提高单步超时时间到 10 分钟（默认 180s 容易导致生成长文时超时）
+role_play_session.assistant_agent.step_timeout = 600
+role_play_session.user_agent.step_timeout = 600
+
 print(Fore.CYAN + f"具体任务描述:\n{role_play_session.task_prompt}\n")
 # 开始协作对话
 chat_turn_limit, n = 30, 0
