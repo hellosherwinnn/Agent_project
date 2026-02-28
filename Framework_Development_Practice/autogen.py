@@ -1,15 +1,32 @@
 import os
 import asyncio
 import re
-from dotenv import load_dotenv, find_dotenv
+from dotenv import load_dotenv
 from autogen_ext.models.openai import OpenAIChatCompletionClient
 from autogen_agentchat.agents import AssistantAgent, UserProxyAgent
 from autogen_agentchat.teams import RoundRobinGroupChat
 from autogen_agentchat.conditions import TextMentionTermination
 from autogen_agentchat.ui import Console
 
+# 动态修补 OpenAI 客户端以去除 "name" 字段 (专门针对 MiniMax 不支持 role name 场景)
+from openai.resources.chat.completions import AsyncCompletions
+original_async_create = AsyncCompletions.create
+
+async def custom_async_create(self, *args, **kwargs):
+    if "messages" in kwargs:
+        new_messages = []
+        for msg in kwargs["messages"]:
+            new_msg = dict(msg)
+            if "name" in new_msg:
+                del new_msg["name"]
+            new_messages.append(new_msg)
+        kwargs["messages"] = new_messages
+    return await original_async_create(self, *args, **kwargs)
+
+AsyncCompletions.create = custom_async_create
+
 # 加载 .env 文件中的环境变量
-load_dotenv(find_dotenv())
+load_dotenv()
 
 def create_openai_model_client():
     """创建并配置 OpenAI 模型客户端"""
@@ -113,38 +130,6 @@ def create_user_proxy():
 完成测试后请回复 TERMINATE。""",
     )
 
-def save_generated_code(messages):
-    """从对话历史中提取最后一段代码块并保存为 app.py"""
-    print("\n--- 正在尝试自动保存生成的代码 ---")
-    code_blocks = []
-    
-    # 遍历所有消息寻找代码块
-    for msg in messages:
-        # 兼容不同类型的消息对象
-        content = ""
-        if hasattr(msg, 'content'):
-            content = msg.content
-        elif isinstance(msg, dict) and 'content' in msg:
-            content = msg['content']
-        
-        if content:
-            # 使用正则提取 ```python ... ``` 中的内容
-            found = re.findall(r"```python\n(.*?)\n```", str(content), re.DOTALL)
-            if found:
-                code_blocks.extend(found)
-    
-    if code_blocks:
-        # 取得最后一段生成的代码（通常是经过修正后的最终版）
-        final_code = code_blocks[-1]
-        file_path = "app.py"
-        try:
-            with open(file_path, "w", encoding="utf-8") as f:
-                f.write(final_code)
-            print(f"成功！最终代码已自动保存至: {os.path.abspath(file_path)}")
-        except Exception as e:
-            print(f"保存失败: {e}")
-    else:
-        print("未在对话中找到可提取的 Python 代码块。")
 
 async def run_software_development_team():
     # 初始化客户端
@@ -177,6 +162,7 @@ async def run_software_development_team():
 
             技术要求：
             - 使用 Streamlit 框架创建 Web 应用
+            - 使用api限制更少的api接口获取数据
             - 界面简洁美观，用户友好
             - 添加适当的错误处理和加载状态
 
@@ -185,10 +171,7 @@ async def run_software_development_team():
     # 异步执行团队协作，并流式输出对话过程
     # Console 会打印流，但我们还需要拿到最终的任务结果对象
     result = await Console(team_chat.run_stream(task=task))
-    
-    # 任务结束后，从结果中提取消息历史并保存代码
-    if hasattr(result, 'messages'):
-        save_generated_code(result.messages)
+
     
     return result
 
