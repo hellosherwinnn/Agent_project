@@ -1,0 +1,8 @@
+transformers
+torch
+openai
+python-dotenv
+google-search-results
+autogen-agentchat
+autogen-ext
+tiktoken
