@@ -36,6 +36,7 @@ jobs:
     - name: 4. Run test_react_agent
       env:
         MODELSCOPE_API_KEY: ${{ secrets.MODELSCOPE_API_KEY }}
+        LLM_API_KEY: ${{ secrets.MODELSCOPE_API_KEY }}
         LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
         LLM_MODEL_ID: ${{ secrets.LLM_MODEL_ID }}
       run: |
