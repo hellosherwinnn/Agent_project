@@ -3,12 +3,17 @@ name: Basic Python CI # 流水线的名字，随便起
 # 1. 触发条件：什么时候执行这个流水线？
 on:
   push:
-    branches: [ "master" ] # 当你 push 代码到 main 分支时触发
+    branches: [ "master" ] # 当你 push 代码到 master 分支时触发
 
 # 2. 任务清单：触发后要做什么？
 jobs:
   build-and-test:
     runs-on: ubuntu-latest # GitHub 会免费借给你一台最新的 Ubuntu 虚拟机
+
+    # 所有 run 步骤默认在 Helloagent_project 目录下执行
+    defaults:
+      run:
+        working-directory: Helloagent_project
 
     steps:
     # 步骤 A：把你的代码下载到这台虚拟机上
@@ -25,10 +30,13 @@ jobs:
     - name: 3. Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r Helloagent_project/requirements.txt
+        pip install -r requirements.txt
 
-    # 步骤 D：运行自动化测试！
-    - name: 4. Run tests with pytest
-      working-directory: Helloagent_project
+    # 步骤 D：运行测试脚本
+    - name: 4. Run test_react_agent
+      env:
+        MODELSCOPE_API_KEY: ${{ secrets.MODELSCOPE_API_KEY }}
+
       run: |
-        pytest
+        python test_react_agent.py
+
