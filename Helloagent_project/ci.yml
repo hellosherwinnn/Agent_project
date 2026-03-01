@@ -3,7 +3,7 @@ name: Basic Python CI # 流水线的名字，随便起
 # 1. 触发条件：什么时候执行这个流水线？
 on:
   push:
-    branches: [ "main" ] # 当你 push 代码到 main 分支时触发
+    branches: [ "master" ] # 当你 push 代码到 main 分支时触发
 
 # 2. 任务清单：触发后要做什么？
 jobs:
