@@ -38,8 +38,5 @@ jobs:
         MODELSCOPE_API_KEY: ${{ secrets.MODELSCOPE_API_KEY }}
         LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
         LLM_MODEL_ID: ${{ secrets.LLM_MODEL_ID }}
-
       run: |
         python test_react_agent.py
-        
-
