@@ -25,7 +25,7 @@ class MyLLM(HelloAgentsLLM):
                 raise ValueError("ModelScope API key not found. Please set MODELSCOPE_API_KEY environment variable.")
 
             # 设置默认模型和其他参数
-            self.model = model or os.getenv("LLM_MODEL_ID") or "Qwen/Qwen3.5-27B"
+            self.model = model or os.getenv("LLM_MODEL_ID") or "Qwen/Qwen3.5-122B-A10B"
             self.temperature = kwargs.get('temperature', 0.7)
             self.max_tokens = kwargs.get('max_tokens')
             self.timeout = kwargs.get('timeout', 60)
